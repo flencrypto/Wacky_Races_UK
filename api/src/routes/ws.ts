@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
-import { WebSocket } from '@fastify/websocket';
+import type { WebSocket } from 'ws';
 import { redisSub } from '../lib/redis';
 
 interface WsClient {
