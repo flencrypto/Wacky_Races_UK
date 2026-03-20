@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(FAN)
+  posts        Post[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum Role {
+  FAN
+  PARTICIPANT
+  ORGANIZER
+}
+
+model Event {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  active      Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  cars        Car[]
+  posts       Post[]
+}
+
+model Car {
+  id         String     @id @default(uuid())
+  name       String
+  number     Int
+  driverName String
+  imageUrl   String?
+  eventId    String
+  event      Event      @relation(fields: [eventId], references: [id])
+  status     CarStatus  @default(STAGING)
+  positions  Position[]
+  posts      Post[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@unique([eventId, number])
+}
+
+enum CarStatus {
+  STAGING
+  ENROUTE
+  PAUSED
+  FINISHED
+  DNF
+}
+
+model Position {
+  id        String   @id @default(uuid())
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id])
+  lat       Float
+  lng       Float
+  speed     Float?
+  heading   Float?
+  altitude  Float?
+  accuracy  Float?
+  rawLat    Float?
+  rawLng    Float?
+  timestamp DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  carId     String?
+  car       Car?     @relation(fields: [carId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  content   String
+  mediaUrl  String?
+  hearts    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
