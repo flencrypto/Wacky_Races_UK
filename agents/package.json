@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "fastify": "^4.28.1",
-    "ioredis": "^5.4.1",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
