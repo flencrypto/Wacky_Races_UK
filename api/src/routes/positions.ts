@@ -13,9 +13,12 @@ const PostPositionSchema = z.object({
   timestamp: z.string().datetime().optional(),
 });
 
-// Blur position by ~400m (roughly 0.004 degrees)
+// Blur radius: ~400m ≈ 0.004 degrees latitude/longitude at mid-latitudes
+const BLUR_RADIUS_DEGREES = 0.004;
+
+// Blur position by ~400m for FAN privacy
 function blurPosition(lat: number, lng: number): { lat: number; lng: number } {
-  const noise = 0.004;
+  const noise = BLUR_RADIUS_DEGREES;
   return {
     lat: lat + (Math.random() - 0.5) * noise * 2,
     lng: lng + (Math.random() - 0.5) * noise * 2,

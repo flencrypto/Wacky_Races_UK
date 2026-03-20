@@ -51,7 +51,7 @@ async function ensureSubscribed() {
 const wsRoutes: FastifyPluginAsync = async (fastify) => {
   await ensureSubscribed();
 
-  fastify.get('/v1/ws', { websocket: true }, (socket, request) => {
+  fastify.get('/v1/ws', { websocket: true, config: { rateLimit: { max: 30, timeWindow: '1 minute' } } }, (socket, request) => {
     const client: WsClient = {
       socket,
       channels: new Set(),

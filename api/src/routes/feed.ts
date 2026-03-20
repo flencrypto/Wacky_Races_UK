@@ -13,7 +13,7 @@ const feedRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get<{
     Params: { id: string };
     Querystring: { cursor?: string; limit?: string };
-  }>('/v1/events/:id/feed', async (request, reply) => {
+  }>('/v1/events/:id/feed', { config: { rateLimit: { max: 60, timeWindow: '1 minute' } } }, async (request, reply) => {
     const limit = Math.min(parseInt(request.query.limit ?? '20'), 50);
     const where: Record<string, unknown> = { eventId: request.params.id };
 
@@ -66,7 +66,7 @@ const feedRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{ Params: { id: string; postId: string } }>(
     '/v1/events/:id/feed/:postId/heart',
-    { preHandler: [fastify.authenticate] },
+    { preHandler: [fastify.authenticate], config: { rateLimit: { max: 30, timeWindow: '1 minute' } } },
     async (request, reply) => {
       const post = await prisma.post.update({
         where: { id: request.params.postId },

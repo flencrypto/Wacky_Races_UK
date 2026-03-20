@@ -12,7 +12,8 @@ const redisPub = new Redis(REDIS_URL);
 const RAW_QUEUE = 'positions:raw';
 const POSITION_CHANNEL = 'position_update';
 // Max speed filter: 300 km/h ≈ 83.33 m/s — rounded up slightly to avoid false positives
-const MAX_SPEED_MS = 83.34;
+const MAX_RALLY_SPEED_KMH = 300;
+const MAX_SPEED_MS = MAX_RALLY_SPEED_KMH / 3.6;
 // Minimum time delta to prevent division by near-zero values causing false outlier detection
 const MIN_DT_SECONDS = 0.1;
 

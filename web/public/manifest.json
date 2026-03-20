@@ -1,7 +1,7 @@
 {
   "name": "Wacky Races UK Live Tracker",
   "short_name": "WackyRaces",
-  "description": "Real-time GPS tracking for the 2026 Europe Rally",
+  "description": "Real-time GPS tracking for the Wacky Races UK 2026 Europe Rally",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",
