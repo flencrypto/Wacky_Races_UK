@@ -35,7 +35,7 @@ const feedRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.post<{ Params: { id: string } }>(
     '/v1/events/:id/feed',
-    { preHandler: [fastify.authenticate] },
+    { preHandler: [fastify.authenticate], config: { rateLimit: { max: 30, timeWindow: '1 minute' } } },
     async (request, reply) => {
       const user = request.jwtUser!;
       const body = CreatePostSchema.parse(request.body);

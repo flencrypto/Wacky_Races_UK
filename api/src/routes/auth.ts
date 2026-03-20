@@ -19,7 +19,7 @@ const RefreshSchema = z.object({
 });
 
 const authRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.post('/v1/auth/register', async (request, reply) => {
+  fastify.post('/v1/auth/register', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } }, async (request, reply) => {
     const body = RegisterSchema.parse(request.body);
     const existing = await prisma.user.findUnique({ where: { email: body.email } });
     if (existing) return reply.status(409).send({ error: 'Email already registered' });
@@ -45,7 +45,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     });
   });
 
-  fastify.post('/v1/auth/login', async (request, reply) => {
+  fastify.post('/v1/auth/login', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } }, async (request, reply) => {
     const body = LoginSchema.parse(request.body);
     const user = await prisma.user.findUnique({ where: { email: body.email } });
     if (!user) return reply.status(401).send({ error: 'Invalid credentials' });
@@ -69,7 +69,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     });
   });
 
-  fastify.post('/v1/auth/refresh', async (request, reply) => {
+  fastify.post('/v1/auth/refresh', { config: { rateLimit: { max: 20, timeWindow: '1 minute' } } }, async (request, reply) => {
     const { refreshToken } = RefreshSchema.parse(request.body);
     try {
       const payload = fastify.jwt.verify<{ sub: string; type: string }>(refreshToken);

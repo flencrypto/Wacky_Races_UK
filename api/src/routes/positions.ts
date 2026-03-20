@@ -25,7 +25,7 @@ function blurPosition(lat: number, lng: number): { lat: number; lng: number } {
 const positionsRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Params: { id: string; carId: string } }>(
     '/v1/events/:id/cars/:carId/positions',
-    { preHandler: [fastify.authenticate] },
+    { preHandler: [fastify.authenticate], config: { rateLimit: { max: 120, timeWindow: '1 minute' } } },
     async (request, reply) => {
       const user = request.jwtUser!;
       if (user.role === 'FAN') return reply.status(403).send({ error: 'Forbidden' });

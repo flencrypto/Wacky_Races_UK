@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
+import rateLimit from '@fastify/rate-limit';
 import websocket from '@fastify/websocket';
 import { prisma } from './lib/prisma';
 import { redis, redisSub, redisPub } from './lib/redis';
@@ -32,6 +33,12 @@ async function main() {
   await fastify.register(cors, {
     origin: process.env.CORS_ORIGIN ?? true,
     credentials: true,
+  });
+
+  // Global rate limit: 200 req/min per IP
+  await fastify.register(rateLimit, {
+    max: 200,
+    timeWindow: '1 minute',
   });
 
   await fastify.register(jwt, {

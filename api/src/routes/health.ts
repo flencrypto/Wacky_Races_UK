@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma';
 import { redis } from '../lib/redis';
 
 const healthRoute: FastifyPluginAsync = async (fastify) => {
-  fastify.get('/health', async (_request, reply) => {
+  fastify.get('/health', { config: { rateLimit: { max: 30, timeWindow: '1 minute' } } }, async (_request, reply) => {
     const checks: Record<string, string> = {};
 
     try {
