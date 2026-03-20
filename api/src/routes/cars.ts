@@ -58,6 +58,11 @@ const carsRoutes: FastifyPluginAsync = async (fastify) => {
       if (user.role !== 'ORGANIZER') return reply.status(403).send({ error: 'Forbidden' });
 
       const body = CreateCarSchema.partial().parse(request.body);
+      const existing = await prisma.car.findFirst({
+        where: { id: request.params.carId, eventId: request.params.id },
+      });
+      if (!existing) return reply.status(404).send({ error: 'Car not found' });
+
       const car = await prisma.car.update({
         where: { id: request.params.carId },
         data: body,
@@ -72,6 +77,12 @@ const carsRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const user = request.jwtUser!;
       if (user.role !== 'ORGANIZER') return reply.status(403).send({ error: 'Forbidden' });
+
+      const existing = await prisma.car.findFirst({
+        where: { id: request.params.carId, eventId: request.params.id },
+      });
+      if (!existing) return reply.status(404).send({ error: 'Car not found' });
+
       await prisma.car.delete({ where: { id: request.params.carId } });
       return reply.status(204).send();
     },

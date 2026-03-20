@@ -7,6 +7,7 @@ RUN npm ci
 COPY tsconfig.json ./
 COPY src ./src/
 RUN npm run build
+RUN npx prisma generate
 RUN npm prune --production
 
 # ---- Production ----
@@ -17,5 +18,4 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package.json ./package.json
-RUN npx prisma generate
 CMD ["dumb-init", "node", "dist/index.js"]

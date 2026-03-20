@@ -41,6 +41,9 @@ async function main() {
     timeWindow: '1 minute',
   });
 
+  // @fastify/jwt handles access token sign/verify.
+  // Refresh tokens are signed/verified separately using jsonwebtoken + JWT_REFRESH_SECRET
+  // (see api/src/routes/auth.ts).
   await fastify.register(jwt, {
     secret: JWT_SECRET,
   });

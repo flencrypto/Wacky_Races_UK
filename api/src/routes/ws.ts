@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
-import type { WebSocket } from 'ws';
+import { WebSocket } from 'ws';
 import { redisSub } from '../lib/redis';
 
 interface WsClient {
@@ -26,20 +26,24 @@ async function ensureSubscribed() {
       for (const client of clients) {
         if (client.socket.readyState !== WebSocket.OPEN) continue;
 
-        let shouldSend = false;
+        let logicalChannel: string | undefined;
 
         if (data.type === 'position' && data.carId) {
-          shouldSend =
-            client.channels.has(`car:${data.carId}`) ||
-            (data.eventId ? client.channels.has(`event:${data.eventId}`) : false);
+          if (client.channels.has(`car:${data.carId}`)) {
+            logicalChannel = `car:${data.carId}`;
+          } else if (data.eventId && client.channels.has(`event:${data.eventId}`)) {
+            logicalChannel = `event:${data.eventId}`;
+          }
         }
 
         if (data.type === 'post' && data.eventId) {
-          shouldSend = client.channels.has(`event:${data.eventId}`);
+          if (client.channels.has(`event:${data.eventId}`)) {
+            logicalChannel = `event:${data.eventId}`;
+          }
         }
 
-        if (shouldSend) {
-          client.socket.send(JSON.stringify({ channel, data }));
+        if (logicalChannel) {
+          client.socket.send(JSON.stringify({ channel: logicalChannel, data }));
         }
       }
     } catch {

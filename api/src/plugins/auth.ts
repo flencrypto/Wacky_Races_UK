@@ -18,7 +18,7 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
       const payload = request.user as { sub: string; email: string; role: string };
       request.jwtUser = payload;
     } catch (err) {
-      reply.status(401).send({ error: 'Unauthorized' });
+      return reply.status(401).send({ error: 'Unauthorized' });
     }
   });
 

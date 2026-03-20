@@ -40,6 +40,14 @@ const feedRoutes: FastifyPluginAsync = async (fastify) => {
       const user = request.jwtUser!;
       const body = CreatePostSchema.parse(request.body);
 
+      // Validate that carId (if provided) belongs to this event
+      if (body.carId) {
+        const car = await prisma.car.findFirst({
+          where: { id: body.carId, eventId: request.params.id },
+        });
+        if (!car) return reply.status(400).send({ error: 'Car does not belong to this event' });
+      }
+
       const post = await prisma.post.create({
         data: {
           eventId: request.params.id,
@@ -68,8 +76,13 @@ const feedRoutes: FastifyPluginAsync = async (fastify) => {
     '/v1/events/:id/feed/:postId/heart',
     { preHandler: [fastify.authenticate], config: { rateLimit: { max: 30, timeWindow: '1 minute' } } },
     async (request, reply) => {
+      const existingPost = await prisma.post.findFirst({
+        where: { id: request.params.postId, eventId: request.params.id },
+      });
+      if (!existingPost) return reply.status(404).send({ error: 'Post not found' });
+
       const post = await prisma.post.update({
-        where: { id: request.params.postId },
+        where: { id: existingPost.id },
         data: { hearts: { increment: 1 } },
       });
       return reply.send(post);

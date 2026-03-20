@@ -1,8 +1,15 @@
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 const USE_DOCKER = process.env.AGENTS_USE_DOCKER === 'true';
+
+// Allowlist of permitted service names. Override via comma-separated AGENTS_ALLOWED_SERVICES env var.
+const ALLOWED_SERVICES: Set<string> = (() => {
+  const fromEnv = process.env.AGENTS_ALLOWED_SERVICES;
+  if (fromEnv) return new Set(fromEnv.split(',').map((s) => s.trim()).filter(Boolean));
+  return new Set(['api', 'processor', 'web', 'nginx', 'agents', 'db', 'redis']);
+})();
 
 export interface DebugReport {
   timestamp: string;
@@ -21,9 +28,12 @@ export class DebugAgent {
   async analyzeService(service: string): Promise<DebugReport> {
     let logs = '';
 
-    if (USE_DOCKER) {
+    if (!ALLOWED_SERVICES.has(service)) {
+      logs = `[Debug] Unknown service '${service}'. Allowed: ${[...ALLOWED_SERVICES].join(', ')}`;
+    } else if (USE_DOCKER) {
       try {
-        const { stdout } = await execAsync(`docker logs ${service} --tail 50 2>&1`);
+        // Use execFile (not exec) to avoid shell injection — args are passed as array
+        const { stdout } = await execFileAsync('docker', ['logs', service, '--tail', '50']);
         logs = stdout;
       } catch (err) {
         logs = `Could not retrieve logs: ${err instanceof Error ? err.message : String(err)}`;

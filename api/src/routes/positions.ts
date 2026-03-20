@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
-import { redisPub, redis } from '../lib/redis';
+import { redis } from '../lib/redis';
 
 const PostPositionSchema = z.object({
   lat: z.number().min(-90).max(90),
@@ -54,26 +54,11 @@ const positionsRoutes: FastifyPluginAsync = async (fastify) => {
         },
       });
 
-      // Push raw position to processor queue
+      // Push raw position to processor queue — processor will sanitize and publish
       await redis.lpush(
         'positions:raw',
         JSON.stringify({
           positionId: position.id,
-          carId: request.params.carId,
-          eventId: request.params.id,
-          lat: body.lat,
-          lng: body.lng,
-          speed: body.speed,
-          heading: body.heading,
-          timestamp: position.timestamp,
-        }),
-      );
-
-      // Publish to pub/sub for WebSocket broadcast
-      await redisPub.publish(
-        'position_update',
-        JSON.stringify({
-          type: 'position',
           carId: request.params.carId,
           eventId: request.params.id,
           lat: body.lat,
